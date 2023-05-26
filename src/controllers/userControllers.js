@@ -271,4 +271,45 @@ module.exports = {
         }
 
     }),
+    postAddress: asyncHandler(async (req, res) => {
+        try {
+            let { _id } = req.user
+            // console.log(req.body, _id);
+            // return
+            const resutl = await userService.postAddress(req.body, _id)
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+
+    }),
+    getAddress: asyncHandler(async (req, res) => {
+        try {
+            let { _id } = req.user
+            const resutl = await userService.getAddress(_id)
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+
+    }),
+    deleteAddress: asyncHandler(async (req, res) => {
+        try {
+            const resutl = await userService.deleteAddress(req.params.id)
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+
+    }),
+    putAddress: asyncHandler(async (req, res) => {
+        try {
+            // let { _id } = req.user
+            const resutl = await userService.putAddress(req.params.id, req.body)
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+
+    }),
 }

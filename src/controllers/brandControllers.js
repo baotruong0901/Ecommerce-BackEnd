@@ -28,8 +28,7 @@ module.exports = {
     }),
     deleteBrand: asyncHandler(async (req, res) => {
         try {
-            let { id } = req.body
-            validateMongoDbId(id)
+            let { id } = req.params
             const resutl = await brandService.deleteBrand(id)
             res.json(resutl)
         } catch (err) {

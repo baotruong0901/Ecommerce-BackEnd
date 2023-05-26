@@ -36,6 +36,11 @@ let initAuthRoutes = (app) => {
     router.get('/bookings', authMiddleware, isAdmin, userControllers.getAllBooking)
     router.put('/booking/:id', authMiddleware, userControllers.confimBooking)
     router.delete('/booking/:id', authMiddleware, userControllers.deleteBooking)
+    //address
+    router.post('/address', authMiddleware, userControllers.postAddress)
+    router.get('/address', authMiddleware, userControllers.getAddress)
+    router.delete('/address/:id', authMiddleware, userControllers.deleteAddress)
+    router.put('/address/:id', authMiddleware, userControllers.putAddress)
 
     //block
     router.put('/unblock/:id', authMiddleware, isAdmin, userControllers.unBlockUser)

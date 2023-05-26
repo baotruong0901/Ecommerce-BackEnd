@@ -46,17 +46,20 @@ module.exports = {
             try {
                 const { id, name } = data
                 // hàm đưa và xử lí ảnh trên cloud
-                const uploader = (path) => cloudinaryUploadImg(path, "images")
-                const { path } = file[0]
-                const newpath = await uploader(path)
-                let resutl = await Brand.findByIdAndUpdate(id, {
-                    name,
-                    images: newpath
-                },
-                    {
-                        new: true
-                    }
-                )
+                let resutl = []
+                if (file) {
+                    const uploader = (path) => cloudinaryUploadImg(path, "images")
+                    const { path } = file[0]
+                    const newpath = await uploader(path)
+                    resutl = await Brand.findByIdAndUpdate(id, {
+                        name,
+                        images: newpath
+                    },
+                        {
+                            new: true
+                        }
+                    )
+                }
                 resolve({
                     success: true,
                     msg: "Update succeed!",
@@ -70,7 +73,7 @@ module.exports = {
     deleteBrand: (id) => {
         return new Promise(async (resolve, reject) => {
             try {
-                await Brand.deleteById(id)
+                await Brand.findByIdAndDelete(id)
                 resolve({
                     success: true,
                     msg: "Delete succeed!",

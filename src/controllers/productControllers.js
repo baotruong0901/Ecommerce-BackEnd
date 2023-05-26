@@ -28,6 +28,14 @@ module.exports = {
             throw new Error(err)
         }
     }),
+    addcoupon: asyncHandler(async (req, res) => {
+        try {
+            const resutl = await productService.addcoupon(req.params.id, req.body)
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+    }),
     deleteProduct: asyncHandler(async (req, res) => {
         try {
             let { id } = req.params

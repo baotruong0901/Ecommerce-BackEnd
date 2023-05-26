@@ -12,7 +12,7 @@ var bookingSchema = new mongoose.Schema({
     cancelBy: String,
     status: {
         type: String,
-        default: "TO CONFIRM"
+        default: "CONFIRM"
     },
     payment: {
         type: String,

@@ -2,6 +2,7 @@ const User = require('../models/userModel')
 const Cart = require('../models/cartModel')
 const Product = require('../models/productModel')
 const Booking = require('../models/bookingModel')
+const Address = require('../models/addressModel')
 const jwtToken = require('../config/jwtToken')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
@@ -430,41 +431,41 @@ module.exports = {
                         //tìm xem data gửi lên có tồn tại trong cart?
                         const product = cart.products.find((p) => p.product.toString() === productData[i].productId
                             && p.color === productData[i].color && p.size === productData[i].size)
-
                         if (product) {
                             //nếu tồn tại
-                            let getPrice = await Product.findById(productData[i].productId).select("price").exec()
+                            let getPrice = await Product.findById(productData[i].productId).select("price coupon").exec()
+                            console.log(getPrice);
                             //cập nhật count
                             product.count += productData[i].count
-                            product.price = getPrice.price * product.count
+                            product.price = (getPrice.price * (1 - (+getPrice?.coupon / 100))) * product.count
                         } else {
                             //nếu không tồn tại thêm mới vào cart
-                            let getPrice = await Product.findById(productData[i].productId).select("price").exec()
+                            let getPrice = await Product.findById(productData[i].productId).select("price coupon").exec()
                             const newProduct = {
                                 product: productData[i].productId,
                                 count: productData[i].count,
                                 color: productData[i].color,
                                 size: productData[i].size,
-                                price: getPrice.price * productData[i].count
+                                price: (getPrice.price * (1 - (+getPrice?.coupon / 100))) * productData[i].count
                             };
                             cart.products.push(newProduct);
                         }
                     }
                     // tính tổng tiền
-                    const cartTotal = cart.products.reduce((acc, curr) => acc + curr.price, 0);
+                    const cartTotal = cart.products.reduce((acc, curr) => acc + (curr?.price), 0);
                     cart.cartTotal = cartTotal;
 
                     await cart.save();
                 } else {
                     //nếu không tìm thấy cart trong model Cart thì thêm mới cart
                     for (let i = 0; i < productData.length; i++) {
-                        let getPrice = await Product.findById(productData[i].productId).select("price").exec()
+                        let getPrice = await Product.findById(productData[i].productId).select("price coupon").exec()
                         const newProduct = {
                             product: productData[i].productId,
                             count: productData[i].count,
                             color: productData[i].color,
                             size: productData[i].size,
-                            price: getPrice.price * productData[i].count
+                            price: (getPrice.price * (1 - (+getPrice?.coupon / 100))) * productData[i].count
                         };
                         cart = new Cart({
                             products: newProduct,
@@ -473,7 +474,7 @@ module.exports = {
 
                     }
                     // tính tổng tiền
-                    const cartTotal = cart.products.reduce((acc, curr) => acc + curr.price, 0);
+                    const cartTotal = cart.products.reduce((acc, curr) => acc + (curr.price), 0);
                     cart.cartTotal = cartTotal;
 
                     await cart.save();
@@ -579,8 +580,8 @@ module.exports = {
                 const user = await User.findById(userId)
                 const cart = await Cart.findOne({ orderBy: user?._id })
                 for (let i = 0; i < cart.products.length; i++) {
-                    if (cart.products[i].product.toString() === productId && cart.products[i].color.toString() === color && cart.products[i].size.toString() === size) {
-                        cart.products.splice(i, 1);
+                    if (cart?.products[i]?.product?.toString() === productId && cart?.products[i]?.color.toString() === color && cart?.products[i]?.size.toString() === size) {
+                        cart?.products.splice(i, 1);
                     }
                 }
                 const cartTotal = cart.products.reduce((acc, curr) => acc + curr.price, 0);
@@ -653,7 +654,7 @@ module.exports = {
 
                 }
                 if (type === "CONFIRM") {
-                    result = await Booking.find({ userId, status: "S1" }).populate('products').populate({
+                    result = await Booking.find({ userId, status: "CONFIRM" }).populate('products').populate({
                         path: 'products',
                         populate: {
                             path: 'product',
@@ -665,7 +666,7 @@ module.exports = {
                     }).skip(offset).limit(limit);
                 }
                 if (type === "RECEIVE") {
-                    result = await Booking.find({ userId, status: "S2" }).populate('products').populate({
+                    result = await Booking.find({ userId, status: "RECEIVE" }).populate('products').populate({
                         path: 'products',
                         populate: {
                             path: 'product',
@@ -677,7 +678,7 @@ module.exports = {
                     }).skip(offset).limit(limit);
                 }
                 if (type === "CANCELLED") {
-                    result = await Booking.find({ userId, status: "S3" }).populate('products').populate({
+                    result = await Booking.find({ userId, status: "CANCELLED" }).populate('products').populate({
                         path: 'products',
                         populate: {
                             path: 'product',
@@ -689,7 +690,7 @@ module.exports = {
                     }).skip(offset).limit(limit);
                 }
                 if (type === "COMPLETED") {
-                    result = await Booking.find({ userId, status: "S4" }).populate('products').populate({
+                    result = await Booking.find({ userId, status: "COMPLETED" }).populate('products').populate({
                         path: 'products',
                         populate: {
                             path: 'product',
@@ -708,16 +709,25 @@ module.exports = {
             } catch (err) {
                 reject(err)
             }
-
         })
     },
     getAllBooking: () => {
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Booking.find({}).populate('products').populate({
-                    path: 'userId',
-                    select: 'firstname lastname mobile  email'
-                })
+                const result = await Booking.find({})
+                    .populate({
+                        path: 'userId',
+                        select: 'firstname lastname mobile  email'
+                    }).populate({
+                        path: 'products',
+                        populate: {
+                            path: 'product',
+                            populate: {
+                                path: 'brand',
+                                model: 'Brand'
+                            }
+                        }
+                    })
                 resolve({
                     success: true,
                     data: result
@@ -732,18 +742,17 @@ module.exports = {
         return new Promise(async (resolve, reject) => {
             try {
                 const { type } = data
-                const findUser = User.findById(useId)
-                console.log(findUser);
+                const findUser = await User.findById(useId)
                 if (type === "CONFIRM") {
                     let findBooking = await Booking.findById(bookingId)
-                    if (findBooking?.status === "TO CONFIRM") {
+                    if (findBooking?.status === "CONFIRM") {
                         let result = await Booking.findByIdAndUpdate(bookingId,
                             {
-                                status: "TO RECEIVE"
+                                status: "RECEIVE"
                             }, { new: true })
                         resolve({
                             success: true,
-                            msg: "Confim sucessfully!",
+                            msg: "Confirm sucessfully!",
                             data: result
                         })
                     } else {
@@ -753,18 +762,18 @@ module.exports = {
                     }
                 }
 
-                if (type === "CANCEL") {
+                if (type === "CANCELLED") {
                     let result = []
                     if (findUser?.role === "user") {
                         result = await Booking.findByIdAndUpdate(bookingId,
                             {
-                                status: "CANCEL",
-                                cancelBy: "Cancel by you."
+                                status: "CANCELLED",
+                                cancelBy: `Cancel by ${findUser?.firstname}.`
                             }, { new: true })
                     } else {
                         result = await Booking.findByIdAndUpdate(bookingId,
                             {
-                                status: "CANCEL",
+                                status: "CANCELLED",
                                 cancelBy: "Cancel by admin."
                             }, { new: true })
                     }
@@ -775,13 +784,25 @@ module.exports = {
                     })
 
                 }
-                if (type === "COMPLETE") {
+                if (type === "COMPLETED") {
                     let result = await Booking.findByIdAndUpdate(bookingId,
                         {
-                            status: "COMPLETE"
+                            status: "COMPLETED"
                         }, { new: true })
+                    let prdId = result.products.map((item) => {
+                        return {
+                            id: item.product._id,
+                            count: item.count
+                        }
+                    })
+                    for (let i = 0; i < prdId.length; i++) {
+                        let productId = prdId[i].id;
+                        let sold = prdId[i].count;
+                        await Product.findByIdAndUpdate(productId, { $inc: { sold } });
+                    }
                     resolve({
                         success: true,
+                        msg: "Complete!",
                         data: result
                     })
                 }
@@ -799,6 +820,80 @@ module.exports = {
                 resolve({
                     success: true,
                     msg: "Delete sucessfully!",
+                })
+
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
+    postAddress: (data, userId) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let { address, city, phoneNumber, fullName } = data
+                let result = await Address.create({
+                    address,
+                    city,
+                    phoneNumber,
+                    fullName,
+                    userId
+                })
+                resolve({
+                    success: true,
+                    msg: "Create succeed!",
+                    data: result
+                })
+
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
+    getAddress: (userId) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let result = await Address.find({ userId })
+                resolve({
+                    success: true,
+                    data: result
+                })
+
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
+    deleteAddress: (id) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                await Address.findByIdAndDelete(id)
+                resolve({
+                    success: true,
+                    msg: "Delete sucessfully!",
+                })
+
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
+    putAddress: (addressId, data) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let result = await Address.findByIdAndUpdate(addressId, {
+                    address: data?.address,
+                    city: data?.city,
+                    phoneNumber: data?.phoneNumber,
+                    fullName: data?.fullName
+                }, { new: true })
+                resolve({
+                    success: true,
+                    msg: "Update sucessfully!",
+                    data: result
                 })
 
             } catch (err) {

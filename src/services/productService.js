@@ -98,12 +98,10 @@ module.exports = {
                 let dataObj = { ...data }
                 let excludeFields = ["page", "sort", "limit", "fields"]
                 excludeFields.forEach((el) => delete dataObj[el])
-                console.log("exclude", excludeFields);
 
                 // filtering
                 //lấy ra product có price trong điều kiện bên dưới
                 let dataStr = JSON.stringify(dataObj)
-                console.log("dataStr", dataStr);
                 dataStr = dataStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`)
                 query = Product.find(JSON.parse(dataStr)).populate("category").populate("brand").populate("color")
 
@@ -137,6 +135,10 @@ module.exports = {
                 if (data.size) {
                     query = query.find({ size: data.size })
                 }
+                if (data.brand) {
+                    query = query.find({ brand: data.brand })
+                }
+                console.log(query);
 
                 //pagination 
                 //phân trang
@@ -153,6 +155,27 @@ module.exports = {
                 resolve({
                     success: true,
                     msg: "Succeed!",
+                    data: resutl
+                })
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
+    addcoupon: (id, data) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let { coupon } = data
+                let resutl = await Product.findByIdAndUpdate(
+                    id,
+                    {
+                        coupon
+                    },
+                    { new: true })
+                resolve({
+                    success: true,
+                    msg: "Assign coupon to product succeed!",
                     data: resutl
                 })
             } catch (err) {
@@ -198,11 +221,12 @@ module.exports = {
         return new Promise(async (resolve, reject) => {
             try {
 
-                let resutl = await Product.find({ brand: id })
+                let result = await Product.find({ brand: id })
+                // result = result.reverse();
                 resolve({
                     success: true,
                     msg: "succeed!",
-                    data: resutl
+                    data: result
                 })
             } catch (err) {
                 reject(err)
@@ -303,10 +327,6 @@ module.exports = {
                             new: true
                         }
                     )
-                    // resolve({
-                    //     success: true,
-                    //     data: rateProduct
-                    // })
                 }
                 const getallratings = await Product.findById(productId)
                 let totalRating = getallratings.ratings.length
@@ -335,6 +355,7 @@ module.exports = {
                 const result = await Size.create(data)
                 resolve({
                     success: true,
+                    msg: "Create Size succeed!",
                     data: result
                 })
             } catch (err) {
@@ -346,7 +367,7 @@ module.exports = {
     getSize: () => {
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Size.find({})
+                const result = (await Size.find({})).reverse()
                 resolve({
                     success: true,
                     data: result
@@ -363,6 +384,7 @@ module.exports = {
                 const result = await Color.create(data)
                 resolve({
                     success: true,
+                    msg: "Create color succeed!",
                     data: result
                 })
             } catch (err) {

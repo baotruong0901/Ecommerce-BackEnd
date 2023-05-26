@@ -57,6 +57,10 @@ const productSchema = new mongoose.Schema({
         type: String,
         default: 0,
     },
+    coupon: {
+        type: String,
+        default: 0,
+    }
 }, { timestamps: true });
 
 //Export the model

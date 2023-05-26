@@ -7,6 +7,7 @@ router.post('/product', authMiddleware, isAdmin, uploadPhoto.array('images', 10)
 router.put('/product/rating', authMiddleware, productControllers.rating)
 router.put('/product/upload/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 10), productImgResize, productControllers.uploadImages)
 router.get('/product/:id', productControllers.getaProduct)
+router.put('/product/coupon/:id', authMiddleware, isAdmin, productControllers.addcoupon)
 
 router.put('/product/:id', authMiddleware, isAdmin, productControllers.editProduct)
 router.delete('/product/:id', authMiddleware, isAdmin, productControllers.deleteProduct)

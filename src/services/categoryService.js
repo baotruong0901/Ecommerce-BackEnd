@@ -40,4 +40,46 @@ module.exports = {
             }
         })
     },
+    deleteCategory: (id) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                await Category.findByIdAndDelete(id)
+                resolve({
+                    success: true,
+                    msg: "Delete succeed!",
+                })
+            } catch (error) {
+                reject(error)
+            }
+        })
+    },
+    editCategory: (data, file) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const { id, name } = data
+                // hàm đưa và xử lí ảnh trên cloud
+                let resutl = []
+                if (file) {
+                    const uploader = (path) => cloudinaryUploadImg(path, "images")
+                    const { path } = file[0]
+                    const newpath = await uploader(path)
+                    resutl = await Category.findByIdAndUpdate(id, {
+                        name,
+                        images: newpath
+                    },
+                        {
+                            new: true
+                        }
+                    )
+                }
+                resolve({
+                    success: true,
+                    msg: "Update succeed!",
+                    data: resutl
+                })
+            } catch (error) {
+                reject(error)
+            }
+        })
+    },
 }
