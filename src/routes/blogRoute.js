@@ -10,6 +10,7 @@ router.delete('/blog/:id', authMiddleware, isAdmin, blogControllers.deleteBlog)
 router.get('/blogs', authMiddleware, isAdmin, blogControllers.getAllBlog)
 router.get('/blog/:id', authMiddleware, blogControllers.getABlog)
 router.put('/feeling/:id', authMiddleware, blogControllers.feelingBlog)
+router.put('/outstanding/:id', authMiddleware, blogControllers.outstandingBlog)
 
 
 module.exports = router

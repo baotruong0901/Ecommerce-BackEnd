@@ -12,6 +12,13 @@ var blogSchema = new mongoose.Schema({
         unique: true,
         lowercase: true
     },
+    topic: {
+        type: String
+    },
+    outstanding: {
+        type: Boolean,
+        default: false
+    },
     image: Array,
     description: {
         type: String

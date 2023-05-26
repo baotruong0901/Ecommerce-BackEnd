@@ -8,7 +8,7 @@ module.exports = {
     createBlog: (data, file, postBy) => {
         return new Promise(async (resolve, reject) => {
             try {
-                let { title, description, slug } = data
+                let { title, description, slug, topic } = data
                 // hàm đưa và xử lí ảnh trên cloud
                 const uploader = (path) => cloudinaryUploadImg(path, "images")
                 const { path } = file[0]
@@ -20,6 +20,7 @@ module.exports = {
                     image: newpath,
                     title,
                     slug,
+                    topic,
                     description,
                     postBy
                 })
@@ -126,6 +127,25 @@ module.exports = {
                 resolve({
                     success: true,
                     msg: "You just liked the blog!",
+                    data: resutl
+                })
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
+    outstandingBlog: (blogId) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let resutl = await Blog.findById(blogId);
+                if (resutl) {
+                    resutl.outstanding = !resutl.outstanding; // Chuyển đổi giá trị của trường outstanding
+                    await resutl.save();
+                }
+                resolve({
+                    success: true,
+                    msg: "succeed!",
                     data: resutl
                 })
             } catch (err) {
