@@ -33,12 +33,15 @@ let initAuthRoutes = (app) => {
     //checkout
     router.post('/booking', authMiddleware, userControllers.postBooking)
     router.get('/booking', authMiddleware, userControllers.getBooking)
+    router.get('/booking/:id', authMiddleware, userControllers.getABooking)
+    router.get('/booking/month/:id', authMiddleware, isAdmin, userControllers.getBookingforMonth)
     router.get('/bookings', authMiddleware, isAdmin, userControllers.getAllBooking)
     router.put('/booking/:id', authMiddleware, userControllers.confimBooking)
     router.delete('/booking/:id', authMiddleware, userControllers.deleteBooking)
     //address
     router.post('/address', authMiddleware, userControllers.postAddress)
     router.get('/address', authMiddleware, userControllers.getAddress)
+    router.get('/address/:id', authMiddleware, userControllers.getAnAddress)
     router.delete('/address/:id', authMiddleware, userControllers.deleteAddress)
     router.put('/address/:id', authMiddleware, userControllers.putAddress)
 
@@ -47,6 +50,7 @@ let initAuthRoutes = (app) => {
     router.put('/block/:id', authMiddleware, isAdmin, userControllers.blockUser)
 
     router.delete('/:id', userControllers.deleteUser)
+    // router.post('/payment', authMiddleware, userControllers.payment)
     return app.use("/api", router);
 
 }

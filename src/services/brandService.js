@@ -47,13 +47,21 @@ module.exports = {
                 const { id, name } = data
                 // hàm đưa và xử lí ảnh trên cloud
                 let resutl = []
-                if (file) {
+                if (file[0]?.path) {
                     const uploader = (path) => cloudinaryUploadImg(path, "images")
-                    const { path } = file[0]
+                    const path = file[0]?.path
                     const newpath = await uploader(path)
                     resutl = await Brand.findByIdAndUpdate(id, {
                         name,
                         images: newpath
+                    },
+                        {
+                            new: true
+                        }
+                    )
+                } else {
+                    resutl = await Brand.findByIdAndUpdate(id, {
+                        name,
                     },
                         {
                             new: true

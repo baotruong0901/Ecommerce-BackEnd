@@ -9,6 +9,7 @@ const crypto = require('crypto')
 const { generateRefreshToken } = require('../config/refreshToken')
 const sendEmail = require('../controllers/emailControllers')
 
+
 const checkEmail = (email) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -84,6 +85,7 @@ module.exports = {
                                     lastname: findUser?.lastname,
                                     email: findUser?.email,
                                     mobile: findUser?.mobile,
+                                    role: findUser?.role,
                                     token: jwtToken.generateToken(findUser?._id),
                                     wishlist: findUser?.wishlist
                                 }
@@ -603,8 +605,10 @@ module.exports = {
     postBooking: (data) => {
         return new Promise(async (resolve, reject) => {
             try {
-                let { products, userId, customer, address, city, mobile, total } = data
-                if (!products || !customer || !address || !city || !mobile) {
+                let { products, userId, customer, address, phoneNumber, total } = data
+                console.log(data);
+                // return
+                if (!products || !customer || !address || !phoneNumber) {
                     resolve({
                         success: true,
                         msg: "Please enter full information!",
@@ -614,8 +618,7 @@ module.exports = {
                     products,
                     userId,
                     address,
-                    city,
-                    mobile,
+                    phoneNumber,
                     customer,
                     total
                 })
@@ -630,6 +633,31 @@ module.exports = {
 
         })
     },
+    getABooking: (bookingId) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let result = await Booking.findById(bookingId).populate('products').populate({
+                    path: 'products',
+                    populate: {
+                        path: 'product',
+                        populate: {
+                            path: 'brand',
+                            model: 'Brand'
+                        }
+                    }
+                })
+
+                resolve({
+                    success: true,
+                    data: result
+                })
+
+            } catch (err) {
+                reject(err)
+            }
+        })
+    },
     getBooking: (data, userId) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -640,6 +668,18 @@ module.exports = {
                 let limit = data.limit
                 let offset = (page - 1) * limit
                 let result = []
+                if (type === "1") {
+                    result = await Booking.findById(bookingId).populate('products').populate({
+                        path: 'products',
+                        populate: {
+                            path: 'product',
+                            populate: {
+                                path: 'brand',
+                                model: 'Brand'
+                            }
+                        }
+                    })
+                }
                 if (type === "ALL") {
                     result = await Booking.find({ userId }).populate('products').populate({
                         path: 'products',
@@ -731,6 +771,42 @@ module.exports = {
                 resolve({
                     success: true,
                     data: result
+                })
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
+    getBookingforMonth: (month) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let bookings = null
+                const year = new Date().getFullYear(); // Lấy năm hiện tại
+                if (month === 'all') {
+                    const startDate = new Date(year, 0, 1); // Ngày bắt đầu của năm
+                    const endDate = new Date(year, 11, 31); // Ngày kết thúc của năm
+                    bookings = await Booking.find({
+                        createdAt: { $gte: startDate, $lte: endDate }
+                    });
+                } else {
+                    const startDate = new Date(year, month - 1, 1); // Thiết lập ngày bắt đầu của tháng
+                    const endDate = new Date(year, month, 0); // Thiết lập ngày kết thúc của tháng
+                    // Truy vấn cơ sở dữ liệu để lấy danh sách sản phẩm của tháng
+                    bookings = await Booking.find({
+                        createdAt: { $gte: startDate, $lte: endDate }
+                    });
+                }
+                // Phân loại sản phẩm thành công và thất bại dựa trên trường status
+                const completedBookings = bookings.filter(booking => booking.status === "COMPLETED");
+                const receivedBookings = bookings.filter(booking => booking.status === "RECEIVE");
+                const cancelledBookings = bookings.filter(booking => booking.status === 'CANCELLED');
+                const confirmBookings = bookings.filter(booking => booking.status === 'CONFIRM');
+                resolve({
+                    success: true,
+                    data: {
+                        completedBookings, receivedBookings, cancelledBookings, confirmBookings
+                    }
                 })
             } catch (err) {
                 reject(err)
@@ -866,6 +942,21 @@ module.exports = {
 
         })
     },
+    getAnAddress: (addressId) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let result = await Address.findById(addressId)
+                resolve({
+                    success: true,
+                    data: result
+                })
+
+            } catch (err) {
+                reject(err)
+            }
+
+        })
+    },
     deleteAddress: (id) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -901,5 +992,23 @@ module.exports = {
             }
 
         })
+
     },
+    // payment: () => {
+    //     return new Promise(async (resolve, reject) => {
+    //         try {
+
+    //             resolve({
+    //                 success: true,
+    //                 msg: "Update sucessfully!",
+    //                 data: result
+    //             })
+
+    //         } catch (err) {
+    //             reject(err)
+    //         }
+
+    //     })
+
+    // },
 }

@@ -6,8 +6,7 @@ var bookingSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     customer: String,
     address: String,
-    city: String,
-    mobile: Number,
+    phoneNumber: String,
     total: String,
     cancelBy: String,
     status: {

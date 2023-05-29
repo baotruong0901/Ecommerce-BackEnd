@@ -243,9 +243,29 @@ module.exports = {
         }
 
     }),
+    getABooking: asyncHandler(async (req, res) => {
+        try {
+            const resutl = await userService.getABooking(req.params.id)
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+
+    }),
     getAllBooking: asyncHandler(async (req, res) => {
         try {
             const resutl = await userService.getAllBooking()
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+
+    }),
+    getBookingforMonth: asyncHandler(async (req, res) => {
+        try {
+            console.log(req.params.id);
+            // return
+            const resutl = await userService.getBookingforMonth(req.params.id)
             res.json(resutl)
         } catch (err) {
             throw new Error(err)
@@ -293,6 +313,15 @@ module.exports = {
         }
 
     }),
+    getAnAddress: asyncHandler(async (req, res) => {
+        try {
+            const resutl = await userService.getAnAddress(req.params.id)
+            res.json(resutl)
+        } catch (err) {
+            throw new Error(err)
+        }
+
+    }),
     deleteAddress: asyncHandler(async (req, res) => {
         try {
             const resutl = await userService.deleteAddress(req.params.id)
@@ -312,4 +341,13 @@ module.exports = {
         }
 
     }),
+    // payment: asyncHandler(async (req, res) => {
+    //     try {
+    //         const resutl = await userService.putAddress(req.params.id, req.body)
+    //         res.json(resutl)
+    //     } catch (err) {
+    //         throw new Error(err)
+    //     }
+
+    // }),
 }
