@@ -12,7 +12,7 @@ const dbConnect = async () => {
         pass: process.env.DB_PASSWORD,
         dbName: process.env.DB_NAME
     }
-    await mongoose.connect(process.env.DB_HOST);
+    await mongoose.connect(process.env.DB_HOST, option);
     const state = Number(mongoose.connection.readyState);
     console.log(dbState.find(f => f.value === state).label, "to database"); // connected to db
 }

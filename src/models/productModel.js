@@ -60,6 +60,10 @@ const productSchema = new mongoose.Schema({
     coupon: {
         type: String,
         default: 0,
+    },
+    stock: {
+        type: Boolean,
+        default: true
     }
 }, { timestamps: true });
 
