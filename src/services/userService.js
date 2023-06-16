@@ -311,7 +311,7 @@ module.exports = {
                 let resetURL = `Hi ${user.firstname}!<br/> Plesase follow this link to reset Your Password.
                 <br/>This link is valid till 10 min from now.
                 <br/>
-                <a href='https://ecommerce-font-end.vercel.app/reset-password/${token}'>Click here</a>
+                <a href='${process.env.URL_REACT}/reset-password/${token}'>Click here</a>
                 `
                 let data = {
                     to: email,
