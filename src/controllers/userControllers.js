@@ -51,7 +51,7 @@ module.exports = {
     }),
     getUsers: asyncHandler(async (req, res) => {
         try {
-            const resutl = await userService.getUsers(req.query.type)
+            const resutl = await userService.getUsers(req.body.type)
             res.json(resutl)
         } catch (err) {
             throw new Error(err)
@@ -165,6 +165,7 @@ module.exports = {
     cartUser: asyncHandler(async (req, res) => {
         let { _id } = req.user
         let { cart } = req.body
+
         try {
             const resutl = await userService.cartUser(_id, cart)
             res.json(resutl)
@@ -175,6 +176,7 @@ module.exports = {
     }),
     getCart: asyncHandler(async (req, res) => {
         let { _id } = req.user
+        console.log(_id);
         try {
             const resutl = await userService.getCart(_id)
             res.json(resutl)
@@ -216,6 +218,7 @@ module.exports = {
     }),
     deleteProductCart: asyncHandler(async (req, res) => {
         let { _id } = req.user
+
         try {
             const resutl = await userService.deleteProductCart(_id, req.body)
             res.json(resutl)

@@ -204,7 +204,7 @@ module.exports = {
                 if (data.title) {
                     data.slug = slugify(data.title)
                 }
-                let resutl = await Product.findByIdAndUpdate(id, data, { new: true })
+                let resutl = await Product(id, data, { new: true })
 
                 resolve({
                     success: true,

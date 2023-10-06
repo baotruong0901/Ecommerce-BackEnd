@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const { generateRefreshToken } = require('../config/refreshToken')
 const sendEmail = require('../controllers/emailControllers')
+const { log } = require('console')
 
 
 const checkEmail = (email) => {
@@ -157,6 +158,8 @@ module.exports = {
                 if (type === "ALL") {
                     resutl = await User.find({ isBlocked: { $ne: true } }).select('-password')
                 }
+                console.log(resutl);
+
                 if (type === "BLOCK") {
                     resutl = await User.find({ isBlocked: true }).select('-password')
                 }
@@ -424,6 +427,7 @@ module.exports = {
             try {
                 // tìm user
                 const user = await User.findById(userId)
+
                 // tìm cart của user trong model Cart
                 let cart = await Cart.findOne({ orderBy: user?._id })
                 //nếu tìm thấy cart thì:
@@ -432,7 +436,9 @@ module.exports = {
                     for (let i = 0; i < productData.length; i++) {
                         //tìm xem data gửi lên có tồn tại trong cart?
                         const product = cart.products.find((p) => p.product.toString() === productData[i].productId
-                            && p.color === productData[i].color && p.size === productData[i].size)
+                            && p.color === productData[i].color)
+                        // && p.size === productData[i].size
+
                         if (product) {
                             //nếu tồn tại
                             let getPrice = await Product.findById(productData[i].productId).select("price coupon").exec()
@@ -488,6 +494,7 @@ module.exports = {
                     msg: "The product has been added to your Cart!",
                     data: cart
                 })
+
             } catch (err) {
                 reject(err)
             }
@@ -497,7 +504,8 @@ module.exports = {
     getCart: (userId) => {
         return new Promise(async (resolve, reject) => {
             try {
-                let products = await Cart.findOne({ orderBy: userId }).populate("products.product")
+                let products = await Cart.findOne({ orderBy: userId }).populate("orderBy").populate("products.color").populate("products.product")
+
                 if (products) {
                     resolve({
                         success: true,
@@ -560,6 +568,7 @@ module.exports = {
             try {
 
                 const user = await User.findById(userId)
+
                 const result = await Cart.findOneAndUpdate({ orderBy: user?._id }, {
                     products: [],
                     cartTotal: 0
@@ -578,11 +587,10 @@ module.exports = {
         return new Promise(async (resolve, reject) => {
             try {
                 let { productId, color, size } = data
-                console.log(data);
                 const user = await User.findById(userId)
                 const cart = await Cart.findOne({ orderBy: user?._id })
                 for (let i = 0; i < cart.products.length; i++) {
-                    if (cart?.products[i]?.product?.toString() === productId && cart?.products[i]?.color.toString() === color && cart?.products[i]?.size.toString() === size) {
+                    if (cart?.products[i]?.product?.toString() === productId && cart?.products[i]?.color.toString() === color) {
                         cart?.products.splice(i, 1);
                     }
                 }

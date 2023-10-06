@@ -21,7 +21,7 @@ let initAuthRoutes = (app) => {
 
     //cart
     router.post('/cart', authMiddleware, userControllers.cartUser)
-    router.get('/cart', authMiddleware, userControllers.getCart)
+    router.get('/carts', authMiddleware, userControllers.getCart)
     router.put('/cart', authMiddleware, userControllers.updateCartProduct)
     router.delete('/empty-cart', authMiddleware, userControllers.emptyCart)
     router.put('/carts', authMiddleware, userControllers.deleteAllProduct)
